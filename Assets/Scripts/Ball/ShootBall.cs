@@ -6,7 +6,7 @@ using UnityEngine;
 public class ShootBall : MonoBehaviour
 {
     public Transform ShootAt;
-    public Vector2 speed = new Vector2(50, 100);
+    private Vector2 speed = new Vector2(20, 40);
     private Rigidbody _rb;
 
     void Start()
@@ -17,6 +17,6 @@ public class ShootBall : MonoBehaviour
     public void ShootTarget()
     {
         Vector3 dir = ShootAt.position - transform.position;
-        _rb.AddForce(dir.normalized  * UnityEngine.Random.Range(speed.x, speed.y), ForceMode.VelocityChange);
+        _rb.velocity = dir.normalized  * UnityEngine.Random.Range(speed.x, speed.y);
     }
 }

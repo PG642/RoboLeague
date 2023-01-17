@@ -13,7 +13,6 @@ namespace ML_Agents.Goalkeeper
             canBoost = 1;
             canDoubleJump = 1;
             canDrift = 1;
-            canDoubleJump = 1;
             useBulletImpulse = 1;
             usePsyonixImpulse = 1;
             useSuspension = 1;

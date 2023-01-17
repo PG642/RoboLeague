@@ -8,6 +8,7 @@ namespace ML_Agents.Goalkeeper
     [Serializable]
     public class GoalkeeperEvironmentHandler: EnvironmentHandler<GoalkeeperEnvironmentParameters>
     {
+        public int activeSeed = -1;
         public GoalkeeperEvironmentHandler(GameObject env, GoalkeeperEnvironmentParameters defaultParameter) : base(env, defaultParameter)
         {
         }
@@ -17,11 +18,16 @@ namespace ML_Agents.Goalkeeper
             UpdateEnvironmentParameters();
             // Determine what seed to use for this episode, if the seed is set to a negative number use a new random seed for each episode
             if (currentParameter.seed >= 0)
+            {
+                activeSeed = (int)currentParameter.seed;
                 UnityEngine.Random.InitState((int)currentParameter.seed);
+            }
             else
             {
                 System.Random rand = new System.Random();
-                UnityEngine.Random.InitState(rand.Next(1000));
+                // Sample a seed from the range 0 to 999
+                activeSeed = rand.Next(1000);
+                UnityEngine.Random.InitState(activeSeed);
             }
             //TODO after merge with difficulty, add difficulty parameter
             if (currentParameter.canDoubleJump == 0)
@@ -68,9 +74,6 @@ namespace ML_Agents.Goalkeeper
             {
                 environment.GetComponentInChildren<CubeGroundControl>().disableWallStabilization = true;
             }
-
         }
-
-
     }
 }

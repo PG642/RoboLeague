@@ -50,7 +50,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_BrainParameters:
-    VectorObservationSize: 20
+    VectorObservationSize: 23
     NumStackedVectorObservations: 1
     m_ActionSpec:
       m_NumContinuousActions: 0
@@ -97,6 +97,7 @@ MonoBehaviour:
     useCustomBounce: 1
     useWallStabilization: 1
     useGroundStabilization: 1
+  _seedText: {fileID: 0}
 --- !u!114 &883974180034025410
 MonoBehaviour:
   m_ObjectHideFlags: 0

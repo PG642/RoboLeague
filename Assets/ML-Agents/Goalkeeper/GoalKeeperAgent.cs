@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using ML_Agents.Goalkeeper;
 using ML_Agents.Handler;
 using UnityEngine;
+using UnityEngine.UI;
 using Unity.MLAgents;
 using Unity.MLAgents.Sensors;
 using Unity.MLAgents.Actuators;
@@ -12,8 +13,8 @@ using Unity.MLAgents.Policies;
 
 public class GoalKeeperAgent : PGBaseAgent
 {
-    // Start is called before the first frame update
     [SerializeField] public GoalkeeperEnvironmentParameters defaultParameter;
+    [SerializeField] private Text _seedText;
 
     private GoalkeeperEvironmentHandler _handler;
     private Rigidbody _rbBall;
@@ -25,31 +26,28 @@ public class GoalKeeperAgent : PGBaseAgent
     {
         base.Start();
         _handler = new GoalkeeperEvironmentHandler(GameObject.Find("Environment"), defaultParameter);
-
         _ball = transform.parent.Find("Ball");
         _rbBall = _ball.GetComponent<Rigidbody>();
-
         _startPosition = transform.position;
-
         _shootAt = transform.parent.Find("ShootAt");
     }
 
     public override void OnEpisodeBegin()
     {
         _handler.ResetParameter();
-        //Reset Car
+        _seedText.text = "Seed: " + _handler.activeSeed.ToString();
+        // Reset Car
         controller.ResetCar(_startPosition, Quaternion.Euler(0f, 90f, 0f));
-
-        //Reset Ball
-        _ball.localPosition = new Vector3(UnityEngine.Random.Range(-10f, 0f), UnityEngine.Random.Range(0f, 20f), UnityEngine.Random.Range(-30f, 30f));
-        //_ball.rotation = Quaternion.Euler(0f, 0f, 0f);
-        _ball.GetComponent<Rigidbody>().velocity = Vector3.zero;
-        _ball.GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
+        // Reset Ball
+        _rbBall.velocity = Vector3.zero;
+        _rbBall.angularVelocity = Vector3.zero;
+        _ball.localPosition = new Vector3(UnityEngine.Random.Range(-10f, 0f), UnityEngine.Random.Range(1.0f, 12f), UnityEngine.Random.Range(-30f, 30f));
+        _ball.rotation = Quaternion.Euler(0f, 0f, 0f);
 
         // Set new Taget Position
         _shootAt.localPosition = new Vector3(-53f, UnityEngine.Random.Range(3f, 3f), UnityEngine.Random.Range(-7f, 7f));
 
-        //Throw Ball
+        // Shoot Ball
         _ball.GetComponent<ShootBall>().ShootTarget();
 
         mapData.ResetIsScored();
@@ -166,7 +164,7 @@ public class GoalKeeperAgent : PGBaseAgent
         sensor.AddObservation(new Vector3(ballXNormalized, ballYNormalized, ballZNormalized));
 
         //Ball velocity
-        Vector3 ball_velocity = rb.velocity.normalized * (_rbBall.velocity.magnitude / 60f);
+        Vector3 ball_velocity = _rbBall.velocity / 60f;
         if (float.IsNaN(ball_velocity.x))
         {
             Debug.Log("Ball: ball_velocity.x == NaN");
@@ -192,31 +190,30 @@ public class GoalKeeperAgent : PGBaseAgent
             boostAmount = -1f;
         }
         sensor.AddObservation(boostAmount);
-    }
 
-    private void Reset()
-    {
-        EndEpisode();
+        // Relative position car to ball
+        float relativeXPos = ((_ball.localPosition.x + 60f) - (transform.localPosition.x + 60f)) / 120f;
+        float relativeYPos = (_ball.localPosition.y - transform.localPosition.y) / 20f;
+        float relativeZPos = ((_ball.localPosition.z + 41f) - (transform.localPosition.z + 41f)) / 82f;
+        sensor.AddObservation(new Vector3(relativeXPos, relativeYPos, relativeZPos));
     }
 
     /// <summary>
-    /// Assigns a reward if the maximum episode length is reached or a goal is scored by any team.
+    /// Assigns a reward if the agent saved.
     /// </summary>
     protected override void AssignReward()
     {
-        //AddReward(-0.001f);
-
         if (_rbBall.velocity.x > 0f)
         {
-            // Agent scored a goal
+            // Agent saved
             SetReward(1f);
-            Reset();
+            EndEpisode();
         }
         if (mapData.isScoredOrange)
         {
             // Agent got scored on
             SetReward(0f);
-            Reset();
+            EndEpisode();
         }
     }
 }
